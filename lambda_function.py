@@ -23,8 +23,20 @@ def save_state(session_id, state):
     )
     
 def lambda_handler(event, context):
-    # Use existing session or create new
-    session_id = event.get("session_id") or str(uuid.uuid4())
+    # Parse the request body (assuming it's JSON)
+    try:
+        body = json.loads(event.get("body", "{}"))  # Parse request body
+        session_id = body.get("session_id") or str(uuid.uuid4())
+    except json.JSONDecodeError:
+        return {
+            "statusCode": 400,
+            "headers": {
+                "Access-Control-Allow-Headers": "Content-Type",
+                "Access-Control-Allow-Methods": "POST"
+            },
+            "body": json.dumps({"message": "Invalid JSON"})
+        }
+    
 
     # Load existing state if session exists
     state = load_state(session_id)

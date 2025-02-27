@@ -3,6 +3,10 @@ import boto3
 import uuid
 from langgraph.graph import StateGraph
 from typing import Dict
+import sys
+import os
+
+sys.path.append(os.path.dirname(os.path.abspath(__file__)))  # Add current directory
 from agents import credit_check, feedback_planner, financial_strategy
 
 # Initialize DynamoDB

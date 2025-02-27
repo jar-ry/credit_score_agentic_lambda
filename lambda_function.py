@@ -55,6 +55,9 @@ def lambda_handler(event, context):
             "body": json.dumps({"message": "Invalid JSON"})
         }
     
+    # Load existing state if session exists
+    state = load_state(session_id)
+    
     if not state:
         # First Time Run
         state = {

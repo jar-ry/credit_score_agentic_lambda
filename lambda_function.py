@@ -6,8 +6,7 @@ from typing import Dict
 import sys
 import os
 
-sys.path.append(os.path.dirname(os.path.abspath(__file__)))  # Add current directory
-# from agents import credit_check, feedback_planner, financial_strategy
+from agents import credit_check, feedback_planner, financial_strategy
 
 # Initialize DynamoDB
 dynamodb = boto3.resource("dynamodb")
@@ -39,8 +38,6 @@ class CreditAIState:
 
 def lambda_handler(event, context):
     print(os.listdir("."))
-    print(os.listdir("./../"))
-    print(os.listdir("./../../"))
     # Parse the request body (assuming it's JSON)
     try:
         body = json.loads(event.get("body", "{}"))  # Parse request body
@@ -85,9 +82,9 @@ def lambda_handler(event, context):
 
     # Define LangGraph Workflow
     workflow = StateGraph(CreditAIState)
-    # workflow.add_node("credit_simulation", credit_check.credit_check_agent)
-    # workflow.add_node("financial_strategy", financial_strategy.financial_strategy_agent)
-    # workflow.add_node("feedback", feedback_planner.feedback_agent)
+    workflow.add_node("credit_simulation", credit_check.credit_check_agent)
+    workflow.add_node("financial_strategy", financial_strategy.financial_strategy_agent)
+    workflow.add_node("feedback", feedback_planner.feedback_agent)
 
     # Define Execution Order
     workflow.set_entry_point("credit_simulation")

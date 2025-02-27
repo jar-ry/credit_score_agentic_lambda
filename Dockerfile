@@ -12,6 +12,7 @@ RUN pip install -r requirements.txt
 
 # Copy function code
 COPY lambda_function.py ${LAMBDA_TASK_ROOT}
+COPY ./agents ${LAMBDA_TASK_ROOT}
 
 # Set permissions
 RUN chmod +x lambda_function.py

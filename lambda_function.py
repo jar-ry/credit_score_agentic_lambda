@@ -3,7 +3,6 @@ import boto3
 import uuid
 from langgraph.graph import StateGraph
 from typing import Dict
-import sys
 import os
 
 from agents import credit_check, feedback_planner, financial_strategy
@@ -37,24 +36,30 @@ class CreditAIState:
     past_scenarios: list  # Stores past iterations
 
 def lambda_handler(event, context):
-    print(os.listdir("."))
-    # Parse the request body (assuming it's JSON)
-    try:
-        body = json.loads(event.get("body", "{}"))  # Parse request body
-        session_id = body.get("session_id") or str(uuid.uuid4())
-        incoming_credit_score = body.get("credit_score")
-        incoming_financial_data = body.get("financial_data")
-        incoming_personal_data = body.get("personal_data")
-    except json.JSONDecodeError:
-        return {
-            "statusCode": 400,
-            "headers": {
-                "Access-Control-Allow-Headers": "Content-Type",
-                "Access-Control-Allow-Methods": "POST"
-            },
-            "body": json.dumps({"message": "Invalid JSON"})
-        }
+    # Parse the request body
+    body = event.get("body", "{}")
+
+    if isinstance(body, dict):  # Already a dictionary
+        parsed_body = body
+    elif isinstance(body, str):  # It's a string, parse it
+        try:
+            parsed_body = json.loads(body)
+        except json.JSONDecodeError:
+            return {
+                "statusCode": 400,
+                "headers": {
+                    "Access-Control-Allow-Headers": "Content-Type",
+                    "Access-Control-Allow-Methods": "POST"
+                },
+                "body": json.dumps({"message": "Invalid JSON"})
+            }
     
+    # Extract parameters
+    session_id = parsed_body.get("session_id") or str(uuid.uuid4())
+    incoming_credit_score = parsed_body.get("credit_score")
+    incoming_financial_data = parsed_body.get("financial_data")
+    incoming_personal_data = parsed_body.get("personal_data")
+
     # Load existing state if session exists
     state = load_state(session_id)
     

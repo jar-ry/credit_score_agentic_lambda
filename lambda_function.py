@@ -66,7 +66,6 @@ def lambda_handler(event, context):
     
     # Extract parameters
     session_id = parsed_body.get("session_id") or str(uuid.uuid4())
-    incoming_credit_score = parsed_body.get("credit_score")
     incoming_financial_data = parsed_body.get("financial_data")
     incoming_personal_data = parsed_body.get("personal_data")
     
@@ -79,7 +78,6 @@ def lambda_handler(event, context):
         # First Time Run
         state = {
             "session_id": session_id,
-            "credit_score": incoming_credit_score or 650,
             "financial_data": incoming_financial_data or {},
             "personal_data": incoming_personal_data or {},
             "past_scenarios": []
@@ -87,14 +85,11 @@ def lambda_handler(event, context):
     else:
         # Append current scenario to history before modifying
         state["past_scenarios"].append({
-            "credit_score": state["credit_score"],
             "financial_data": state["financial_data"],
             "personal_data": state["personal_data"]
         })
 
         # Update only if new data is provided
-        if incoming_credit_score:
-            state["credit_score"] = incoming_credit_score
         if incoming_financial_data:
             state["financial_data"].update(incoming_financial_data)
         if incoming_personal_data:
@@ -119,7 +114,35 @@ def lambda_handler(event, context):
     llm_with_tools = llm.bind_tools(tools)
 
     def financial_planner(state: CreditAIState):
-        return {"messages": [llm_with_tools.invoke(state["messages"])]}
+        # Invoke the credit_check tool inside the planner logic
+        credit_score_estimate = credit_check_tool.func(state["financial_data"])  # Call the credit check tool
+        
+        # Update the state with the new credit score
+        state["credit_score_estimate"] = credit_score_estimate
+
+        # Include other details (financial_data and personal_data)
+        financial_data = state.get("financial_data", {})
+        personal_data = state.get("personal_data", {})
+
+        # TODO add some reasoning or strategy using strategy agent
+        
+        # Prepare the prompt for the LLM, including reasoning and strategy
+        llm_input = f"Based on the following details:\n\n\
+            Financial Data: {financial_data}\n\
+            Personal Data: {personal_data}\n\n\
+            What can I do to improve my credit score based on my current situation?"
+
+        # Prepare the output
+        messages = [llm_with_tools.invoke(llm_input)]
+        
+        updated_state = {
+            "credit_score_estimate": credit_score_estimate,
+            "financial_data": financial_data,
+            "personal_data": personal_data,
+            "messages": messages
+        }
+
+        return updated_state
     
     workflow.add_node("financial_planner", financial_planner)
     tool_node = ToolNode(tools=[credit_check_tool])
@@ -137,13 +160,6 @@ def lambda_handler(event, context):
     workflow.set_entry_point("financial_planner")
     workflow.set_finish_point("financial_planner")
     graph = workflow.compile()
-
-    # Add the prompt input message to the message history
-    state["messages"]= {
-        "role": "user", 
-        "content": "What can I do to improve my credit score based on my current situation?"
-    }
-    print(state)
 
     # Execute LangGraph
     updated_state = graph.invoke(state)

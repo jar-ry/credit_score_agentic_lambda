@@ -2,8 +2,8 @@ import json
 import boto3
 import uuid
 from langgraph.graph import StateGraph
-from typing import Dict
-import os
+from typing import TypedDict, Annotated, Dict, List
+from langgraph.graph.message import add_messages
 
 from agents import credit_check, feedback_planner, financial_strategy
 
@@ -28,12 +28,14 @@ def save_state(session_id, state):
     )
 
 # Credit AI State Schema
-class CreditAIState:
+class CreditAIState(TypedDict):
     session_id: str
     credit_score: int
     financial_data: Dict
     personal_data: Dict
-    past_scenarios: list  # Stores past iterations
+    past_scenarios: List[Dict]  # Stores past iterations
+    messages: Annotated[List, add_messages]  # Needed for LangGraph’s LLM
+
 
 def lambda_handler(event, context):
     # Parse the request body

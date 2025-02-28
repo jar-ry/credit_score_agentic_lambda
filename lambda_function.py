@@ -139,12 +139,11 @@ def lambda_handler(event, context):
 
     print(state)
     # Add the prompt input message to the message history
-    state["messages"].append(
-        {
-            "role": "user", 
-            "content": "What can I do to improve my credit score based on my current situation?"
-        }
-    )
+    state["messages"]= {
+        "role": "user", 
+        "content": "What can I do to improve my credit score based on my current situation?"
+    }
+
     # Execute LangGraph
     updated_state = graph.invoke(state)
 

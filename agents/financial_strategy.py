@@ -19,6 +19,13 @@ def financial_strategy_agent(credit_score, financial_data):
     Provide 2-3 actionable financial strategies to improve their credit score and overall financial health.
     """
 
-    response = llm([HumanMessage(content=prompt)])
+    messages = [
+        (
+            "system",
+            "You are a highly knowledgeable financial advisor. A client has provided their credit score and financial details.",
+        ),
+        ("human",  prompt),
+    ]
+    response = llm.invoke(messages)
     print(response)
     return response.content

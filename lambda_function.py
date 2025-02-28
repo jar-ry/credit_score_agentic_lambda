@@ -11,7 +11,7 @@ from langgraph.graph import StateGraph
 from langgraph.graph.message import add_messages
 from langgraph.prebuilt import ToolNode, tools_condition
 
-from agents import financial_strategy
+# from agents import financial_strategy
 from tools import credit_check
 from validation import json_validation
 
@@ -137,12 +137,12 @@ def lambda_handler(event, context):
     workflow.set_finish_point("financial_planner")
     graph = workflow.compile()
 
-    print(state)
     # Add the prompt input message to the message history
     state["messages"]= {
         "role": "user", 
         "content": "What can I do to improve my credit score based on my current situation?"
     }
+    print(state)
 
     # Execute LangGraph
     updated_state = graph.invoke(state)

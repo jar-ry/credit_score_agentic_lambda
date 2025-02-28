@@ -148,7 +148,10 @@ def lambda_handler(event, context):
     # Execute LangGraph
     updated_state = graph.invoke(state)
 
-    messages = [message["content"] if isinstance(message, HumanMessage) else str(message) for message in updated_state.get("messages", [])]
+    print(updated_state)
+    messages = [
+        message.content if isinstance(message, HumanMessage) else str(message) for message in updated_state.get("messages", [])
+    ]
 
     # Return state and session info
     return {

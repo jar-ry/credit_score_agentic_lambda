@@ -1,15 +1,17 @@
 # Tool Agent 1: Simulates Credit Score Check
-def credit_check_tool(financial_data):
-    print("IN THE TOOL")
-    print(type(financial_data))
-    print(financial_data)
-    # Extract financial data
-    income = financial_data.get("income", 0)
-    expenses = financial_data.get("expenses", 0)
-    debts = financial_data.get("debts", {})
-    credit_limit = financial_data.get("credit_limit", 0)
-    missed_payments = financial_data.get("missed_payments", 0)
-    late_payments = financial_data.get("late_payments", 0)
+def credit_check_tool(income: float, expenses: float, debts: dict, credit_limit: float, missed_payments: int, late_payments:int):
+    """Calculates a credit score based on financial data."""
+
+    # print("IN THE TOOL")
+    # print(type(financial_data))
+    # print(financial_data)
+    # # Extract financial data
+    # income = financial_data.get("income", 0)
+    # expenses = financial_data.get("expenses", 0)
+    # debts = financial_data.get("debts", {})
+    # credit_limit = financial_data.get("credit_limit", 0)
+    # missed_payments = financial_data.get("missed_payments", 0)
+    # late_payments = financial_data.get("late_payments", 0)
     
     BASE_SCORE = 0
     MAX_SCORE = 1000

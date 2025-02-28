@@ -116,13 +116,13 @@ def lambda_handler(event, context):
     def financial_planner(state: CreditAIState):
         print("====== state ======")
         print(state)
-        # Invoke the credit_check tool inside the planner logic
-        credit_score_estimate = credit_check_tool.func(state["financial_data"])  # Call the credit check tool
+        # # Invoke the credit_check tool inside the planner logic
+        # credit_score_estimate = credit_check_tool.func(state["financial_data"])  # Call the credit check tool
         
-        # Update the state with the new credit score
-        state["credit_score_estimate"] = credit_score_estimate
+        # # Update the state with the new credit score
+        # state["credit_score_estimate"] = credit_score_estimate
 
-        # Include other details (financial_data and personal_data)
+        # # Include other details (financial_data and personal_data)
         financial_data = state.get("financial_data", {})
         personal_data = state.get("personal_data", {})
 
@@ -138,7 +138,7 @@ def lambda_handler(event, context):
         messages = [llm_with_tools.invoke(llm_input)]
         
         updated_state = {
-            "credit_score_estimate": credit_score_estimate,
+            # "credit_score_estimate": credit_score_estimate,
             "financial_data": financial_data,
             "personal_data": personal_data,
             "messages": messages

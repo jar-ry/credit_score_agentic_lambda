@@ -114,6 +114,8 @@ def lambda_handler(event, context):
     llm_with_tools = llm.bind_tools(tools)
 
     def financial_planner(state: CreditAIState):
+        print("====== state ======")
+        print(state)
         # Invoke the credit_check tool inside the planner logic
         credit_score_estimate = credit_check_tool.func(state["financial_data"])  # Call the credit check tool
         
@@ -141,6 +143,8 @@ def lambda_handler(event, context):
             "personal_data": personal_data,
             "messages": messages
         }
+        print("========= updated_state ==========")
+        print(updated_state)
 
         return updated_state
     
@@ -158,7 +162,6 @@ def lambda_handler(event, context):
 
     # Define Execution Order
     workflow.set_entry_point("financial_planner")
-    workflow.set_finish_point("financial_planner")
     graph = workflow.compile()
 
     # Execute LangGraph

@@ -1,11 +1,18 @@
 import json
 import boto3
 import uuid
-from langgraph.graph import StateGraph
+import os
 from typing import TypedDict, Annotated, Dict, List
-from langgraph.graph.message import add_messages
 
-from agents import credit_check, feedback_planner, financial_strategy
+from langchain.tools import Tool
+from langchain_openai import ChatOpenAI
+
+from langgraph.graph import StateGraph
+from langgraph.graph.message import add_messages
+from langgraph.prebuilt import ToolNode, tools_condition
+
+from agents import financial_strategy
+from tools import credit_check
 from validation import json_validation
 
 # Initialize DynamoDB
@@ -36,7 +43,6 @@ class CreditAIState(TypedDict):
     personal_data: Dict
     past_scenarios: List[Dict]  # Stores past iterations
     messages: Annotated[List, add_messages]  # Needed for LangGraph’s LLM
-
 
 def lambda_handler(event, context):
     # Parse the request body
@@ -95,15 +101,40 @@ def lambda_handler(event, context):
 
     # Define LangGraph Workflow
     workflow = StateGraph(CreditAIState)
-    workflow.add_node("credit_simulation", credit_check.credit_check_agent)
-    workflow.add_node("financial_strategy", financial_strategy.financial_strategy_agent)
-    workflow.add_node("feedback", feedback_planner.feedback_agent)
+    credit_check_tool = Tool(
+        name="CreditCheck",
+        func=credit_check.credit_check_tool,
+        description="Calculates a credit score based on financial data."
+    )
+    tools = [credit_check_tool]
+    llm = ChatOpenAI(
+        model="gpt-4o",
+        temperature=0,
+        max_tokens=None,
+        timeout=None,
+        max_retries=2,
+        api_key=os.getenv("OPEN_AI_KEY")
+    )
+    llm_with_tools = llm.bind_tools(tools)
+
+    def financial_planner(state: CreditAIState):
+        return {"messages": [llm_with_tools.invoke(state["messages"])]}
+    
+    workflow.add_node("financial_planner", financial_planner)
+    tool_node = ToolNode(tools=[credit_check_tool])
+    workflow.add_node("tools", tool_node)
+
+    workflow.add_conditional_edges(
+        "financial_planner",
+        tools_condition,
+    )
+    
+    # Any time a tool is called, we return to the chatbot to decide the next step
+    workflow.add_edge("tools", "financial_planner")
 
     # Define Execution Order
-    workflow.set_entry_point("credit_simulation")
-    workflow.add_edge("credit_simulation", "financial_strategy")
-    workflow.add_edge("financial_strategy", "feedback")  # Feedback comes last
-    workflow.set_finish_point("financial_strategy")
+    workflow.set_entry_point("financial_planner")
+    workflow.set_finish_point("financial_planner")
     graph = workflow.compile()
 
     # Execute LangGraph

@@ -1,5 +1,6 @@
 # Tool Agent 1: Simulates Credit Score Check
 def credit_check_agent(state):
+    print(state)
     financial_data = state.get("financial_data", {})
 
     income = financial_data.get("income", 0)

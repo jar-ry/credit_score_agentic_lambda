@@ -1,5 +1,6 @@
 # Feedback & Refinement Agent (Reasoning Layer)
 def feedback_agent(state):
+    print(state)
     last_scenario = state["past_scenarios"][-1] if state["past_scenarios"] else {}
     
     # Compare new vs. old inputs

@@ -6,6 +6,7 @@ from typing import TypedDict, Annotated, Dict, List
 from langgraph.graph.message import add_messages
 
 from agents import credit_check, feedback_planner, financial_strategy
+from validation import json_validation
 
 # Initialize DynamoDB
 dynamodb = boto3.resource("dynamodb")
@@ -61,6 +62,8 @@ def lambda_handler(event, context):
     incoming_credit_score = parsed_body.get("credit_score")
     incoming_financial_data = parsed_body.get("financial_data")
     incoming_personal_data = parsed_body.get("personal_data")
+    
+    json_validation.validate_financial_data(incoming_financial_data)
 
     # Load existing state if session exists
     state = load_state(session_id)

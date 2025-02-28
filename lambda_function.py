@@ -98,9 +98,11 @@ def lambda_handler(event, context):
     workflow.set_entry_point("credit_simulation")
     workflow.add_edge("credit_simulation", "financial_strategy")
     workflow.add_edge("financial_strategy", "feedback")  # Feedback comes last
+    workflow.set_finish_point("financial_strategy")
+    graph = workflow.compile()
 
     # Execute LangGraph
-    updated_state = workflow.invoke(state)
+    updated_state = graph.invoke(state)
 
     # Return state and session info
     return {

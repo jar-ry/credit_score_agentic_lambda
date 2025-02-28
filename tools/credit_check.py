@@ -1,9 +1,9 @@
 # Tool Agent 1: Simulates Credit Score Check
-def credit_check_tool(state):
-    print(state)
+def credit_check_tool(financial_data):
+    print("IN THE TOOL")
+    print(type(financial_data))
+    print(financial_data)
     # Extract financial data
-    financial_data = state.get("financial_data", {})
-
     income = financial_data.get("income", 0)
     expenses = financial_data.get("expenses", 0)
     debts = financial_data.get("debts", {})

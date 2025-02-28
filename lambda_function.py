@@ -143,8 +143,6 @@ def lambda_handler(event, context):
             "personal_data": personal_data,
             "messages": messages
         }
-        print("========= updated_state ==========")
-        print(updated_state)
 
         return updated_state
     

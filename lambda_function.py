@@ -6,6 +6,7 @@ from typing import TypedDict, Annotated, Dict, List
 
 from langchain.tools import Tool
 from langchain_openai import ChatOpenAI
+from langchain.schema import HumanMessage
 
 from langgraph.graph import StateGraph
 from langgraph.graph.message import add_messages
@@ -147,8 +148,13 @@ def lambda_handler(event, context):
     # Execute LangGraph
     updated_state = graph.invoke(state)
 
+    messages = [message["content"] if isinstance(message, HumanMessage) else str(message) for message in updated_state.get("messages", [])]
+
     # Return state and session info
     return {
         "session_id": session_id,
-        "updated_state": updated_state
+        "updated_state": {
+            **updated_state,
+            "messages": messages 
+        }
     }

@@ -137,6 +137,14 @@ def lambda_handler(event, context):
     workflow.set_finish_point("financial_planner")
     graph = workflow.compile()
 
+    print(state)
+    # Add the prompt input message to the message history
+    state["messages"].append(
+        {
+            "role": "user", 
+            "content": "What can I do to improve my credit score based on my current situation?"
+        }
+    )
     # Execute LangGraph
     updated_state = graph.invoke(state)
 

@@ -6,7 +6,7 @@ from typing import TypedDict, Annotated, Dict, List
 
 from langchain.tools import Tool
 from langchain_openai import ChatOpenAI
-from langchain.schema import HumanMessageSchema
+from langchain.schema import HumanMessage as HumanMessageSchema
 from langchain_core.messages import HumanMessage, ToolMessage
 
 from langgraph.graph import StateGraph
@@ -165,6 +165,7 @@ def lambda_handler(event, context):
 
     # Define Execution Order
     workflow.set_entry_point("financial_planner")
+    workflow.set_finish_point("financial_planner")
     graph = workflow.compile()
 
     # Execute LangGraph

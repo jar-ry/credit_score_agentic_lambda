@@ -40,7 +40,7 @@ def save_state(session_id, state):
 # Credit AI State Schema
 class CreditAIState(TypedDict):
     session_id: str
-    credit_score: int
+    credit_score_estimate: int
     financial_data: Dict
     personal_data: Dict
     past_scenarios: List[Dict]  # Stores past iterations
@@ -81,7 +81,8 @@ def lambda_handler(event, context):
             "session_id": session_id,
             "financial_data": incoming_financial_data or {},
             "personal_data": incoming_personal_data or {},
-            "past_scenarios": []
+            "past_scenarios": [],
+            "messages": []
         }
     else:
         # Append current scenario to history before modifying
@@ -135,25 +136,39 @@ def lambda_handler(event, context):
             Personal Data: {personal_data}\n\n\
             What is my credit score?"
 
-        messages = [HumanMessage(llm_input)]
+        messages = [HumanMessage(content=llm_input)]
 
         # Prepare the output
         ai_msg = llm_with_tools.invoke(messages)
-        
+        print("ai_msg")
+        print(ai_msg)
         messages.append(ai_msg)
+        print("messages")
+        print(messages)
+        ai_response = ai_msg['content']
+        print("ai_response")
+        print(ai_response)
+        if "call_credit_check" in ai_response:
+            credit_score_estimate = credit_check_tool.func(financial_data)
+            state["credit_score_estimate"] = credit_score_estimate
+            messages.append(ToolMessage(name="CreditCheck", content=f"Credit score: {credit_score_estimate}"))
 
-        # updated_state = {
-        #     # "credit_score_estimate": credit_score_estimate,
-        #     "financial_data": financial_data,
-        #     "personal_data": personal_data,
-        #     "messages": messages
-        # }
+        print("messages call_credit_check")
+        print(messages)
+        print("state")
+        print(state)
+        updated_state = {
+            "session_id": state["session_id"],
+            "credit_score": state.get("credit_score", "Not calculated yet"),
+            "financial_data": financial_data,
+            "personal_data": personal_data,
+            "messages": messages
+        }
 
-        return messages
+        return updated_state
     
     workflow.add_node("financial_planner", financial_planner)
-    tool_node = ToolNode(tools=[credit_check_tool])
-    workflow.add_node("tools", tool_node)
+    workflow.add_node("credit_check", ToolNode(tools=[credit_check_tool]))
 
     workflow.add_conditional_edges(
         "financial_planner",
@@ -161,7 +176,7 @@ def lambda_handler(event, context):
     )
     
     # Any time a tool is called, we return to the chatbot to decide the next step
-    workflow.add_edge("tools", "financial_planner")
+    workflow.add_edge("credit_check", "financial_planner")
 
     # Define Execution Order
     workflow.set_entry_point("financial_planner")
@@ -169,7 +184,7 @@ def lambda_handler(event, context):
     graph = workflow.compile()
 
     # Execute LangGraph
-    updated_state = graph.invoke(state)
+    updated_state = graph.invoke(state) or {"messages": []}
 
     print(updated_state)
     messages = [

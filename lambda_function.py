@@ -6,7 +6,8 @@ from typing import TypedDict, Annotated, Dict, List
 
 from langchain.tools import Tool
 from langchain_openai import ChatOpenAI
-from langchain.schema import HumanMessage
+from langchain.schema import HumanMessageSchema
+from langchain_core.messages import HumanMessage, ToolMessage
 
 from langgraph.graph import StateGraph
 from langgraph.graph.message import add_messages
@@ -134,17 +135,21 @@ def lambda_handler(event, context):
             Personal Data: {personal_data}\n\n\
             What is my credit score?"
 
-        # Prepare the output
-        messages = [llm_with_tools.invoke(llm_input)]
-        
-        updated_state = {
-            # "credit_score_estimate": credit_score_estimate,
-            "financial_data": financial_data,
-            "personal_data": personal_data,
-            "messages": messages
-        }
+        messages = [HumanMessage(llm_input)]
 
-        return updated_state
+        # Prepare the output
+        ai_msg = llm_with_tools.invoke(messages)
+        
+        messages.append(ai_msg)
+
+        # updated_state = {
+        #     # "credit_score_estimate": credit_score_estimate,
+        #     "financial_data": financial_data,
+        #     "personal_data": personal_data,
+        #     "messages": messages
+        # }
+
+        return messages
     
     workflow.add_node("financial_planner", financial_planner)
     tool_node = ToolNode(tools=[credit_check_tool])
@@ -167,7 +172,7 @@ def lambda_handler(event, context):
 
     print(updated_state)
     messages = [
-        message.content if isinstance(message, HumanMessage) else str(message) for message in updated_state.get("messages", [])
+        message.content if isinstance(message, HumanMessageSchema) else str(message) for message in updated_state.get("messages", [])
     ]
 
     # Return state and session info

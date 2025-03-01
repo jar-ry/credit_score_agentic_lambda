@@ -148,12 +148,13 @@ def lambda_handler(event, context):
         tool_calls = ai_msg.tool_calls
         print("tool_calls")
         print(tool_calls)
-        if "call_credit_check" in tool_calls:
-            credit_score_estimate = credit_check_tool.func(financial_data)
-            state["credit_score_estimate"] = credit_score_estimate
-            print("credit_score_estimate")
-            print(credit_score_estimate)
-            messages.append(ToolMessage(name="CreditCheck", content=f"Credit score: {credit_score_estimate}"))
+        for tool in tool_calls:
+            if tool['name'] == 'CreditCheck' and tool['type'] == 'tool_call':
+                credit_score_estimate = credit_check_tool.func(financial_data)
+                state["credit_score_estimate"] = credit_score_estimate
+                print("credit_score_estimate")
+                print(credit_score_estimate)
+                messages.append(ToolMessage(name="CreditCheck", content=f"Credit score: {credit_score_estimate}"))
 
         print("messages call_credit_check")
         print(messages)

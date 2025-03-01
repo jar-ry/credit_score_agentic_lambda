@@ -4,6 +4,7 @@ import ast
 # def credit_check_tool(income: float, expenses: float, debts: dict, credit_limit: float, missed_payments: int, late_payments:int):
 def credit_check_tool(financial_data):
     """Calculates a credit score based on financial data."""
+    print("Tool called")
     # Extract financial data
     financial_data = ast.literal_eval(financial_data)
     
@@ -46,7 +47,7 @@ def credit_check_tool(financial_data):
     # Ensure score is within range [0, 1000]
     credit_score = max(BASE_SCORE, min(MAX_SCORE, credit_score))
 
-    return {
+    response = {
         "credit_score": int(credit_score),
         "debt_to_income_ratio": round(dti_ratio, 2),
         "loan_to_income_ratio": round(lti_ratio, 2),
@@ -55,3 +56,6 @@ def credit_check_tool(financial_data):
         "missed_payments": missed_payments,
         "late_payments": late_payments
     }
+    print("Tool responding")
+    print(response)
+    return response

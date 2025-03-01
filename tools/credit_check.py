@@ -4,13 +4,8 @@ import ast
 # def credit_check_tool(income: float, expenses: float, debts: dict, credit_limit: float, missed_payments: int, late_payments:int):
 def credit_check_tool(arg_1):
     """Calculates a credit score based on financial data."""
-
-
     # Extract financial data
     financial_data = ast.literal_eval(arg_1)
-    print("IN THE TOOL")
-    print(type(financial_data))
-    print(financial_data)
     
     income = financial_data.get("income", 0)
     expenses = financial_data.get("expenses", 0)

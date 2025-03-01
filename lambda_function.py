@@ -132,7 +132,7 @@ def lambda_handler(event, context):
         llm_input = f"Based on the following details:\n\n\
             Financial Data: {financial_data}\n\
             Personal Data: {personal_data}\n\n\
-            What can I do to improve my credit score based on my current situation?"
+            What is my credit score?"
 
         # Prepare the output
         messages = [llm_with_tools.invoke(llm_input)]

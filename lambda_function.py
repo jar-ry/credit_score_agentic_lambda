@@ -168,7 +168,7 @@ def lambda_handler(event, context):
         return updated_state
     
     workflow.add_node("financial_planner", financial_planner)
-    workflow.add_node("credit_check", ToolNode(tools=[credit_check_tool]))
+    workflow.add_node("tools", ToolNode(tools=[credit_check_tool]))
 
     workflow.add_conditional_edges(
         "financial_planner",
@@ -176,7 +176,7 @@ def lambda_handler(event, context):
     )
     
     # Any time a tool is called, we return to the chatbot to decide the next step
-    workflow.add_edge("credit_check", "financial_planner")
+    workflow.add_edge("tools", "financial_planner")
 
     # Define Execution Order
     workflow.set_entry_point("financial_planner")

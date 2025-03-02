@@ -24,6 +24,18 @@ jobs:
         run: |
           aws ecr get-login-password --region ap-southeast-2 | docker login --username AWS --password-stdin ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.ap-southeast-2.amazonaws.com
 
+      - name: Delete existing images from ECR
+        env:
+          ECR_REGISTRY: ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.ap-southeast-2.amazonaws.com
+          ECR_REPOSITORY: credit-score-lambda
+        run: |
+          IMAGE_DIGESTS=$(aws ecr list-images --repository-name $ECR_REPOSITORY --query 'imageIds[*]' --output json)
+          if [[ "$IMAGE_DIGESTS" != "[]" ]]; then
+            aws ecr batch-delete-image --repository-name $ECR_REPOSITORY --image-ids "$IMAGE_DIGESTS"
+          else
+            echo "No images to delete."
+          fi
+
       - name: Build, tag, and push image to Amazon ECR
         env:
           ECR_REGISTRY: ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.ap-southeast-2.amazonaws.com

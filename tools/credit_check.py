@@ -5,10 +5,9 @@ import ast
 def credit_check_tool(financial_data):
     """Calculates a credit score based on financial data."""
     print("Tool called")
-    print(financial_data)
+    print(type(financial_data))
     # Extract financial data
     financial_data = ast.literal_eval(financial_data)
-    print("dict")
     print(financial_data)
     income = financial_data.get("income", 0)
     expenses = financial_data.get("expenses", 0)

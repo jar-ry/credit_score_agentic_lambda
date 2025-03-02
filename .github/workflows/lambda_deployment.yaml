@@ -22,11 +22,11 @@ jobs:
       - name: Login to Amazon ECR
         id: login-ecr
         run: |
-          aws ecr-public get-login-password --region us-east-1 | docker login --username AWS --password-stdin public.ecr.aws/z4c0m7a6
+          aws ecr get-login-password --region ap-southeast-2 | docker login --username AWS --password-stdin ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.ap-southeast-2.amazonaws.com
 
       - name: Build, tag, and push image to Amazon ECR
         env:
-          ECR_REGISTRY: public.ecr.aws/z4c0m7a6
+          ECR_REGISTRY: ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.ap-southeast-2.amazonaws.com
           ECR_REPOSITORY: credit-score-lambda
           IMAGE_TAG: latest
         run: |
@@ -37,4 +37,4 @@ jobs:
         run: |
           aws lambda update-function-code \
             --function-name ${{ secrets.CREDIT_AI_LAMBDA_ARN }} \
-            --image-uri public.ecr.aws/z4c0m7a6/credit-score-lambda:latest
+            --image-uri ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.ap-southeast-2.amazonaws.com/credit-score-lambda:latest

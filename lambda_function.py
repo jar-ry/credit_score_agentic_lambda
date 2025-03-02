@@ -154,7 +154,12 @@ def lambda_handler(event, context):
                 state["credit_score_estimate"] = credit_score_estimate
                 print("credit_score_estimate")
                 print(credit_score_estimate)
-                messages.append(ToolMessage(name="CreditCheck", content=f"Credit score: {credit_score_estimate}"))
+
+                messages.append(ToolMessage(
+                    name="CreditCheck", 
+                    content=f"Credit score: {credit_score_estimate}",
+                    tool_call_id=str(uuid.uuid4())
+                ))
 
         print("messages call_credit_check")
         print(messages)

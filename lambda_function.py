@@ -47,9 +47,13 @@ class CreditAIState(TypedDict):
     messages: Annotated[List, add_messages]  # Needed for LangGraph’s LLM
 
 def lambda_handler(event, context):
+    print('event')
+    print(event)
     # Parse the request body
     body = event.get("body", "{}")
-
+    print('body')
+    print(body)
+    print(type(body))
     if isinstance(body, dict):  # Already a dictionary
         parsed_body = body
     elif isinstance(body, str):  # It's a string, parse it
@@ -64,7 +68,9 @@ def lambda_handler(event, context):
                 },
                 "body": json.dumps({"message": "Invalid JSON"})
             }
-    
+    print('parsed_body')
+    print(parsed_body)
+    print(type(parsed_body))
     # Extract parameters
     session_id = parsed_body.get("session_id") or str(uuid.uuid4())
     incoming_financial_data = parsed_body.get("financial_data")

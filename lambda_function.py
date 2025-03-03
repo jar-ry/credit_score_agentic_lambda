@@ -158,7 +158,7 @@ def lambda_handler(event, context):
                 messages.append(ToolMessage(
                     name="CreditCheck", 
                     content=f"Credit score details: {credit_score_estimate}",
-                    tool_call_id=str(uuid.uuid4())
+                    tool_call_id=str(tool['id'])
                 ))
 
         print("before second invoke")

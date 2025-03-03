@@ -59,6 +59,7 @@ def lambda_handler(event, context):
     elif isinstance(body, str):  # It's a string, parse it
         try:
             parsed_body = json.loads(body)
+            parsed_body = parsed_body.get('body', {})
         except json.JSONDecodeError:
             return {
                 "statusCode": 400,

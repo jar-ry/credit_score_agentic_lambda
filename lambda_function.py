@@ -116,14 +116,6 @@ def lambda_handler(event, context):
     llm_with_tools = llm.bind_tools(tools)
 
     def financial_planner(state: CreditAIState):
-        print("====== state ======")
-        print(state)
-        # # Invoke the credit_check tool inside the planner logic
-        # credit_score_estimate = credit_check_tool.func(state["financial_data"])  # Call the credit check tool
-        
-        # # Update the state with the new credit score
-        # state["credit_score_estimate"] = credit_score_estimate
-
         # # Include other details (financial_data and personal_data)
         financial_data = state.get("financial_data", {})
         personal_data = state.get("personal_data", {})
@@ -154,6 +146,7 @@ def lambda_handler(event, context):
                 state["credit_score_estimate"] = credit_score_estimate
                 print("credit_score_estimate")
                 print(credit_score_estimate)
+                state["credit_score"] = credit_score_estimate
 
                 messages.append(ToolMessage(
                     name="CreditCheck", 
@@ -174,15 +167,8 @@ def lambda_handler(event, context):
         print(state)
         print("messages")
         print(messages)
-        updated_state = {
-            "session_id": state["session_id"],
-            "credit_score": state.get("credit_score", "Not calculated yet"),
-            "financial_data": financial_data,
-            "personal_data": personal_data,
-            "messages": messages
-        }
-
-        return updated_state
+        state["messages"] = messages
+        return state
     
     workflow.add_node("financial_planner", financial_planner)
     workflow.add_node("tools", ToolNode(tools=[credit_check_tool]))

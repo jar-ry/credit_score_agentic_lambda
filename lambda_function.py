@@ -69,7 +69,8 @@ def lambda_handler(event, context):
     session_id = parsed_body.get("session_id") or str(uuid.uuid4())
     incoming_financial_data = parsed_body.get("financial_data")
     incoming_personal_data = parsed_body.get("personal_data")
-    
+    print(incoming_financial_data)
+    print(type(incoming_financial_data))
     json_validation.validate_financial_data(incoming_financial_data)
 
     # Load existing state if session exists

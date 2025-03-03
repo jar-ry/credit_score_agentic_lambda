@@ -161,6 +161,8 @@ def lambda_handler(event, context):
                     tool_call_id=str(uuid.uuid4())
                 ))
 
+        print("before second invoke")
+        print(messages)
         # Get the LLM's response
         ai_response = llm_with_tools.invoke(messages)
         

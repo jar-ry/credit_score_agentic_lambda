@@ -157,14 +157,21 @@ def lambda_handler(event, context):
 
                 messages.append(ToolMessage(
                     name="CreditCheck", 
-                    content=f"Credit score: {credit_score_estimate}",
+                    content=f"Credit score details: {credit_score_estimate}",
                     tool_call_id=str(uuid.uuid4())
                 ))
 
-        print("messages call_credit_check")
-        print(messages)
+        # Get the LLM's response
+        ai_response = llm_with_tools.invoke(messages)
+        
+        print("ai_response")
+        print(ai_response)
+        messages.append(ai_response)
+
         print("state")
         print(state)
+        print("messages")
+        print(messages)
         updated_state = {
             "session_id": state["session_id"],
             "credit_score": state.get("credit_score", "Not calculated yet"),
@@ -183,8 +190,8 @@ def lambda_handler(event, context):
         tools_condition,
     )
     
-    # Any time a tool is called, we return to the chatbot to decide the next step
-    workflow.add_edge("tools", "financial_planner")
+    # # Any time a tool is called, we return to the chatbot to decide the next step
+    # workflow.add_edge("tools", "financial_planner")
 
     # Define Execution Order
     workflow.set_entry_point("financial_planner")

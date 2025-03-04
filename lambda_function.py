@@ -75,15 +75,18 @@ def lambda_handler(event, context):
     print(parsed_body)
     print(type(parsed_body))
     # Extract parameters
-    session_id = parsed_body.get("session_id") or str(uuid.uuid4())
+    session_id = parsed_body.get("session_id", None)
     incoming_financial_data = parsed_body.get("financial_data")
     incoming_personal_data = parsed_body.get("personal_data")
+    print("session_id")
+    print(session_id)
     print(incoming_financial_data)
     print(type(incoming_financial_data))
-    json_validation.validate_financial_data(incoming_financial_data)
-
-    # Load existing state if session exists
-    state = load_state(session_id)
+    if not session_id:
+        json_validation.validate_financial_data(incoming_financial_data)
+    else:
+        # Load existing state if session exists
+        state = load_state(session_id)
     
     if not state:
         # First Time Run
@@ -100,12 +103,6 @@ def lambda_handler(event, context):
             "financial_data": state["financial_data"],
             "personal_data": state["personal_data"]
         })
-
-        # Update only if new data is provided
-        if incoming_financial_data:
-            state["financial_data"].update(incoming_financial_data)
-        if incoming_personal_data:
-            state["personal_data"].update(incoming_personal_data)
 
     # Define LangGraph Workflow
     workflow = StateGraph(CreditAIState)
@@ -188,11 +185,11 @@ def lambda_handler(event, context):
     workflow.set_entry_point("financial_planner")
     workflow.set_finish_point("financial_planner")
     graph = workflow.compile()
-
+    print("First execution state")
+    print(state)
     # Execute LangGraph
     updated_state = graph.invoke(state) or {"messages": []}
 
-    print(updated_state)
     messages = [
         message.content if isinstance(message, HumanMessageSchema) else str(message) for message in updated_state.get("messages", [])
     ]

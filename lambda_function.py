@@ -136,7 +136,7 @@ def lambda_handler(event, context):
         llm_input = f"Based on the following details:\n\n\
             Financial Data: {financial_data}\n\
             Personal Data: {personal_data}\n\n\
-            What is my credit score?"
+            What can I do to improve my credit score?"
 
         messages = [HumanMessage(content=llm_input)]
 
@@ -145,11 +145,8 @@ def lambda_handler(event, context):
         print("ai_msg")
         print(ai_msg)
         messages.append(ai_msg)
-        print("messages")
-        print(messages)
         tool_calls = ai_msg.tool_calls
-        print("tool_calls")
-        print(tool_calls)
+
         for tool in tool_calls:
             if tool['name'] == 'CreditCheck' and tool['type'] == 'tool_call':
                 credit_score_estimate = credit_check_tool.func(financial_data)
@@ -164,8 +161,6 @@ def lambda_handler(event, context):
                     tool_call_id=str(tool['id'])
                 ))
 
-        print("before second invoke")
-        print(messages)
         # Get the LLM's response
         ai_response = llm_with_tools.invoke(messages)
         
@@ -173,8 +168,6 @@ def lambda_handler(event, context):
         print(ai_response)
         messages.append(ai_response.content)
 
-        print("state")
-        print(state)
         print("messages")
         print(messages)
         state["messages"] = messages

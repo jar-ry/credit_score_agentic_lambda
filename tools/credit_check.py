@@ -47,12 +47,12 @@ def credit_check_tool(financial_data):
 
     response = {
         "credit_score": int(credit_score),
-        "debt_to_income_ratio": round(dti_ratio, 2),
-        "loan_to_income_ratio": round(lti_ratio, 2),
-        "credit_utilization": round(credit_utilization * 100, 2),
-        "discretionary_income_score": round(discretionary_income_score, 2),
-        "missed_payments": missed_payments,
-        "late_payments": late_payments
+        # "debt_to_income_ratio": round(dti_ratio, 2),
+        # "loan_to_income_ratio": round(lti_ratio, 2),
+        # "credit_utilization": round(credit_utilization * 100, 2),
+        # "discretionary_income_score": round(discretionary_income_score, 2),
+        # "missed_payments": missed_payments,
+        # "late_payments": late_payments
     }
     print("Tool responding")
     print(response)

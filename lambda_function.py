@@ -197,7 +197,10 @@ def lambda_handler(event, context):
     messages = [
         message.content if isinstance(message, HumanMessageSchema) else str(message) for message in updated_state.get("messages", [])
     ]
-
+    print("SAVING")
+    print(updated_state)
+    print(messages)
+    save_state(session_id, updated_state)
     # Return state and session info
     return {
         "session_id": session_id,

@@ -133,7 +133,7 @@ def lambda_handler(event, context):
         llm_input = f"Based on the following details:\n\n\
             Financial Data: {financial_data}\n\
             Personal Data: {personal_data}\n\n\
-            What can I do to improve my credit score?"
+            Please only give me 3 recommendations on how to improve my credit score?"
 
         messages = [HumanMessage(content=llm_input)]
 

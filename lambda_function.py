@@ -36,7 +36,7 @@ def deserialize_state(state):
             elif state["type"] == "ai":
                 return AIMessage(content=state["content"], additional_kwargs=state.get("additional_kwargs", {}))
             elif state["type"] == "tool":
-                return ToolMessage(content=state["content"], additional_kwargs=state.get("additional_kwargs", {}))
+                return ToolMessage(content=state["content"], tool_call_id=state['tool_call_id'], additional_kwargs=state.get("additional_kwargs", {}))
         return {k: deserialize_state(v) for k, v in state.items()}  # Recursively handle dicts
     return state  # Return unchanged for primitive types
 

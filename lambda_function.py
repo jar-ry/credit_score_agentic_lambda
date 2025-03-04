@@ -110,6 +110,8 @@ def lambda_handler(event, context):
     print(type(parsed_body))
     # Extract parameters
     session_id = parsed_body.get("session_id", None)
+    if not session_id:
+        session_id = str(uuid.uuid4())
     incoming_financial_data = parsed_body.get("financial_data")
     incoming_personal_data = parsed_body.get("personal_data")
     print("session_id")

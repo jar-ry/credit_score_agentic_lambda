@@ -117,6 +117,7 @@ def lambda_handler(event, context):
             session_id = str(uuid.uuid4())
         incoming_financial_data = parsed_body.get("financial_data")
         incoming_personal_data = parsed_body.get("personal_data")
+        incoming_message = parsed_body.get("message")
         print("session_id")
         print(session_id)
         print(incoming_financial_data)
@@ -144,6 +145,7 @@ def lambda_handler(event, context):
                 "financial_data": state["financial_data"],
                 "personal_data": state["personal_data"]
             })
+            state["incoming_message"] = incoming_message
 
         # Define LangGraph Workflow
         workflow = StateGraph(CreditAIState)
@@ -167,14 +169,18 @@ def lambda_handler(event, context):
             # # Include other details (financial_data and personal_data)
             financial_data = state.get("financial_data", {})
             personal_data = state.get("personal_data", {})
+            incoming_message = state.get("incoming_message", None)
 
             # TODO add some reasoning or strategy using strategy agent
             
-            # Prepare the prompt for the LLM, including reasoning and strategy
-            llm_input = f"Based on the following details:\n\n\
-                Financial Data: {financial_data}\n\
-                Personal Data: {personal_data}\n\n\
-                Please only give me 3 recommendations on how to improve my credit score and give me my current credit score"
+            if incoming_message:
+                llm_input = incoming_message
+            else:
+                # Prepare the prompt for the LLM, including reasoning and strategy
+                llm_input = f"Based on the following details:\n\n\
+                    Financial Data: {financial_data}\n\
+                    Personal Data: {personal_data}\n\n\
+                    Please only give me 3 recommendations on how to improve my credit score and give me my current credit score"
 
             messages = [HumanMessage(content=llm_input)]
 

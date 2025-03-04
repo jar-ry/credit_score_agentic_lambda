@@ -7,7 +7,7 @@ from typing import TypedDict, Annotated, Dict, List
 from langchain.tools import Tool
 from langchain_openai import ChatOpenAI
 from langchain.schema import HumanMessage as HumanMessageSchema
-from langchain_core.messages import HumanMessage, ToolMessage
+from langchain_core.messages import HumanMessage, ToolMessage, AIMessage
 
 from langgraph.graph import StateGraph
 from langgraph.graph.message import add_messages
@@ -21,21 +21,53 @@ from validation import json_validation
 dynamodb = boto3.resource("dynamodb")
 table = dynamodb.Table("credit_ai_sessions")  # Replace with your table name
 
+# Helper function to deserialize state
+def deserialize_state(state):
+    """ Convert JSON back into LangGraph-compatible objects """
+    if isinstance(state, list):  
+        return [deserialize_state(item) for item in state]  # Recursively handle lists
+    elif isinstance(state, dict):  
+        if "type" in state and "content" in state:  
+            # Convert JSON back to Langchain message objects
+            if state["type"] == "human":
+                return HumanMessage(content=state["content"], additional_kwargs=state.get("additional_kwargs", {}))
+            elif state["type"] == "ai":
+                return AIMessage(content=state["content"], additional_kwargs=state.get("additional_kwargs", {}))
+            elif state["type"] == "tool":
+                return ToolMessage(content=state["content"], additional_kwargs=state.get("additional_kwargs", {}))
+        return {k: deserialize_state(v) for k, v in state.items()}  # Recursively handle dicts
+    return state  # Return unchanged for primitive types
+
 # Helper function to load state from DynamoDB
 def load_state(session_id):
     """ Retrieve session state from DynamoDB """
     response = table.get_item(Key={"session_id": session_id})
-    print("DB response")
+    print("DB response:")
     print(response)
-    return json.loads(response["Item"]["state"]) if "Item" in response else None
+    
+    if "Item" in response:
+        serialized_state = json.loads(response["Item"]["state"])
+        return deserialize_state(serialized_state)  # Convert JSON back to Langchain objects
+    return None
+
+def serialize_state(state):
+    """ Convert LangGraph state to a JSON-serializable format """
+    if isinstance(state, list):  
+        return [serialize_state(item) for item in state]  # Recursively handle lists
+    elif isinstance(state, dict):  
+        return {k: serialize_state(v) for k, v in state.items()}  # Recursively handle dicts
+    elif isinstance(state, (HumanMessage, AIMessage, ToolMessage)):  
+        return state.dict()  # Convert message objects to dictionary
+    return state  # Return unchanged for JSON-safe types
 
 # Helper function to save state to DynamoDB
 def save_state(session_id, state):
     """ Store LangGraph session state in DynamoDB """
+    serialized_state = serialize_state(state)  # Convert before saving
     table.put_item(
         Item={
             "session_id": session_id,
-            "state": json.dumps(state)
+            "state": json.dumps(serialized_state)
         }
     )
 
@@ -195,7 +227,7 @@ def lambda_handler(event, context):
     updated_state = graph.invoke(state)
 
     messages = [
-        message.content if isinstance(message, HumanMessageSchema) else str(message) for message in updated_state.get("messages", [])
+        message.content if isinstance(message, HumanMessage) else str(message) for message in updated_state.get("messages", [])
     ]
     print("SAVING")
     print(updated_state)

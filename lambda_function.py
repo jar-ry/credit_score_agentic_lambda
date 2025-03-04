@@ -24,6 +24,8 @@ table = dynamodb.Table("credit_ai_sessions")  # Replace with your table name
 # Helper function to deserialize state
 def deserialize_state(state):
     """ Convert JSON back into LangGraph-compatible objects """
+    print("deserialize_state")
+    print(state)
     if isinstance(state, list):  
         return [deserialize_state(item) for item in state]  # Recursively handle lists
     elif isinstance(state, dict):  

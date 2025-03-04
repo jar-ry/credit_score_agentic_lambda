@@ -171,7 +171,7 @@ def lambda_handler(event, context):
         
         print("ai_response")
         print(ai_response)
-        messages.append(ai_response)
+        messages.append(ai_response.content)
 
         print("state")
         print(state)

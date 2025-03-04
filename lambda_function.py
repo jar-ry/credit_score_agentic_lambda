@@ -25,6 +25,8 @@ table = dynamodb.Table("credit_ai_sessions")  # Replace with your table name
 def load_state(session_id):
     """ Retrieve session state from DynamoDB """
     response = table.get_item(Key={"session_id": session_id})
+    print("DB response")
+    print(response)
     return json.loads(response["Item"]["state"]) if "Item" in response else None
 
 # Helper function to save state to DynamoDB
@@ -87,6 +89,8 @@ def lambda_handler(event, context):
     else:
         # Load existing state if session exists
         state = load_state(session_id)
+        print("DB state")
+        print(state)
     
     if not state:
         # First Time Run
@@ -188,7 +192,7 @@ def lambda_handler(event, context):
     print("First execution state")
     print(state)
     # Execute LangGraph
-    updated_state = graph.invoke(state) or {"messages": []}
+    updated_state = graph.invoke(state)
 
     messages = [
         message.content if isinstance(message, HumanMessageSchema) else str(message) for message in updated_state.get("messages", [])

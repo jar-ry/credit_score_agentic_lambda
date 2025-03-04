@@ -57,7 +57,7 @@ def serialize_state(state):
     elif isinstance(state, dict):  
         return {k: serialize_state(v) for k, v in state.items()}  # Recursively handle dicts
     elif isinstance(state, (HumanMessage, AIMessage, ToolMessage)):  
-        return state.dict()  # Convert message objects to dictionary
+        return state.model_dump()  # Convert message objects to dictionary
     return state  # Return unchanged for JSON-safe types
 
 # Helper function to save state to DynamoDB
@@ -171,7 +171,7 @@ def lambda_handler(event, context):
         llm_input = f"Based on the following details:\n\n\
             Financial Data: {financial_data}\n\
             Personal Data: {personal_data}\n\n\
-            Please only give me 3 recommendations on how to improve my credit score?"
+            Please only give me 3 recommendations on how to improve my credit score and give me my current credit score"
 
         messages = [HumanMessage(content=llm_input)]
 

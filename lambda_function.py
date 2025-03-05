@@ -238,12 +238,20 @@ def lambda_handler(event, context):
         print(messages)
         save_state(session_id, updated_state)
         # Return state and session info
-        return {
+        response = {
             "session_id": session_id,
             "updated_state": {
                 **updated_state,
                 "messages": messages 
             }
+        }
+        return {
+            "statusCode": 200,
+            "headers": {
+                "Content-Type": "application/json",
+                "Access-Control-Allow-Origin": "*"
+            },
+            "body": json.dumps(response)
         }
     except Exception as e:
         print("ERRROR")

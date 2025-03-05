@@ -156,8 +156,10 @@ def lambda_handler(event, context):
             financial_data = state.get("financial_data", {})
             personal_data = state.get("personal_data", {})
             incoming_message = state.get("incoming_message", None)
-            print("State in financial planner")
-            print(state)
+            messages = state.get("messages", [])
+            print("messages in financial planner")
+            print(messages)
+            print(incoming_message)
             # TODO add some reasoning or strategy using strategy agent
             
             if incoming_message:
@@ -169,8 +171,9 @@ def lambda_handler(event, context):
                     Personal Data: {personal_data}\n\n\
                     Please only give me 3 recommendations on how to improve my credit score and give me my current credit score"
 
-            messages = [HumanMessage(content=llm_input)]
-
+            messages.append(HumanMessage(content=llm_input))
+            print("messages beofre invoke")
+            print(messages)
             # Prepare the output
             ai_msg = llm_with_tools.invoke(messages)
             print("ai_msg")

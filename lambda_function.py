@@ -77,6 +77,7 @@ class CreditAIState(TypedDict):
     personal_data: Dict
     past_scenarios: List[Dict]  # Stores past iterations
     messages: Annotated[List, add_messages]  # Needed for LangGraph’s LLM
+    incoming_message: str
 
 def lambda_handler(event, context):
     try:
@@ -130,10 +131,6 @@ def lambda_handler(event, context):
             }
         else:
             # Append current scenario to history before modifying
-            state["past_scenarios"].append({
-                "financial_data": state["financial_data"],
-                "personal_data": state["personal_data"]
-            })
             state["incoming_message"] = incoming_message
 
         # Define LangGraph Workflow

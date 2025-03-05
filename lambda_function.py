@@ -24,8 +24,6 @@ table = dynamodb.Table("credit_ai_sessions")  # Replace with your table name
 # Helper function to deserialize state
 def deserialize_state(state):
     """ Convert JSON back into LangGraph-compatible objects """
-    print("deserialize_state")
-    print(state)
     if isinstance(state, list):  
         return [deserialize_state(item) for item in state]  # Recursively handle lists
     elif isinstance(state, dict):  
@@ -44,8 +42,6 @@ def deserialize_state(state):
 def load_state(session_id):
     """ Retrieve session state from DynamoDB """
     response = table.get_item(Key={"session_id": session_id})
-    print("DB response:")
-    print(response)
     
     if "Item" in response:
         serialized_state = json.loads(response["Item"]["state"])
@@ -84,13 +80,10 @@ class CreditAIState(TypedDict):
 
 def lambda_handler(event, context):
     try:
-        print('event')
-        print(event)
         # Parse the request body
         body = event.get("body", "{}")
         print('body')
         print(body)
-        print(type(body))
         if isinstance(body, dict):  # Already a dictionary
             parsed_body = body
         elif isinstance(body, str):  # It's a string, parse it
@@ -110,7 +103,6 @@ def lambda_handler(event, context):
                 }
         print('parsed_body')
         print(parsed_body)
-        print(type(parsed_body))
         # Extract parameters
         session_id = parsed_body.get("session_id", None)
         if not session_id:
@@ -118,10 +110,7 @@ def lambda_handler(event, context):
         incoming_financial_data = parsed_body.get("financial_data")
         incoming_personal_data = parsed_body.get("personal_data")
         incoming_message = parsed_body.get("message")
-        print("session_id")
-        print(session_id)
-        print(incoming_financial_data)
-        print(type(incoming_financial_data))
+
         if not session_id:
             json_validation.validate_financial_data(incoming_financial_data)
         else:
@@ -170,7 +159,8 @@ def lambda_handler(event, context):
             financial_data = state.get("financial_data", {})
             personal_data = state.get("personal_data", {})
             incoming_message = state.get("incoming_message", None)
-
+            print("State in financial planner")
+            print(state)
             # TODO add some reasoning or strategy using strategy agent
             
             if incoming_message:

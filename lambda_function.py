@@ -163,7 +163,9 @@ def lambda_handler(event, context):
             # TODO add some reasoning or strategy using strategy agent
             
             if incoming_message:
-                llm_input = incoming_message
+                llm_input = f"If applicable generate a new credit score and answer the user's question:\n\
+                    new question: {incoming_message}"
+                
             else:
                 # Prepare the prompt for the LLM, including reasoning and strategy
                 llm_input = f"Based on the following details:\n\n\

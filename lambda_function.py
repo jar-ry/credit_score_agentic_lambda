@@ -180,7 +180,8 @@ def lambda_handler(event, context):
             print(ai_msg)
             messages.append(ai_msg)
             tool_calls = ai_msg.tool_calls
-
+            print("tool_calls")
+            print(tool_calls)
             for tool in tool_calls:
                 if tool['name'] == 'CreditCheck' and tool['type'] == 'tool_call':
                     credit_score_estimate = credit_check_tool.func(financial_data)

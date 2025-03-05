@@ -6,14 +6,13 @@ from typing import TypedDict, Annotated, Dict, List
 
 from langchain.tools import Tool
 from langchain_openai import ChatOpenAI
-from langchain.schema import HumanMessage as HumanMessageSchema
 from langchain_core.messages import HumanMessage, ToolMessage, AIMessage
 
 from langgraph.graph import StateGraph
 from langgraph.graph.message import add_messages
 from langgraph.prebuilt import ToolNode, tools_condition
 
-# from agents import financial_strategy
+from agents import financial_strategy
 from tools import credit_check
 from validation import json_validation
 
@@ -152,30 +151,41 @@ def lambda_handler(event, context):
         llm_with_tools = llm.bind_tools(tools)
 
         def financial_planner(state: CreditAIState):
-            # # Include other details (financial_data and personal_data)
+            """
+            Runs financial strategy analysis.
+            - First Run: Provides three recommendations.
+            - Future Runs: Adjusts financial data based on user input.
+            """
             financial_data = state.get("financial_data", {})
             personal_data = state.get("personal_data", {})
-            incoming_message = state.get("incoming_message", None)
+            incoming_message = state.get("incoming_message", "")
             messages = state.get("messages", [])
+            
             print("messages in financial planner")
             print(messages)
             print(incoming_message)
             # TODO add some reasoning or strategy using strategy agent
-            
-            if incoming_message:
-                llm_input = f"If applicable generate a new credit score and answer the user's question:\n\
-                    new question: {incoming_message}"
+
+            if not state.get("past_scenarios"):
+                llm_input = f"""
+                Given the following financial and personal data:
                 
+                Financial Data: {financial_data}
+                Personal Data: {personal_data}
+                
+                Generate exactly 3 actionable recommendations to improve my credit score.
+                Then, calculate and provide my current estimated credit score.
+                """
             else:
-                # Prepare the prompt for the LLM, including reasoning and strategy
-                llm_input = f"Based on the following details:\n\n\
-                    Financial Data: {financial_data}\n\
-                    Personal Data: {personal_data}\n\n\
-                    Please only give me 3 recommendations on how to improve my credit score and give me my current credit score"
+                # Future Runs: Adjust based on user request
+                llm_input = f"""
+                User has made a request: "{incoming_message}".
+                
+                Modify the financial data accordingly and provide an updated response.
+                """
 
             messages.append(HumanMessage(content=llm_input))
-            print("messages beofre invoke")
-            print(messages)
+            
             # Prepare the output
             ai_msg = llm_with_tools.invoke(messages)
             print("ai_msg")
@@ -210,20 +220,21 @@ def lambda_handler(event, context):
             state["messages"] = messages
             return state
         
+        # Add nodes
+        workflow.add_node("financial_strategy_agent", financial_strategy.financial_strategy_agent)
         workflow.add_node("financial_planner", financial_planner)
         workflow.add_node("tools", ToolNode(tools=[credit_check_tool]))
 
-        workflow.add_conditional_edges(
-            "financial_planner",
-            tools_condition,
-        )
-        
-        # # Any time a tool is called, we return to the chatbot to decide the next step
-        # workflow.add_edge("tools", "financial_planner")
+        # Define Execution Flow
+        if state.get("past_scenarios"):  # If there are past runs, process user intent first
+            workflow.add_edge("financial_strategy_agent", "financial_planner")  
+            workflow.set_entry_point("financial_strategy_agent")
+        else:  # First run, start directly with financial planning
+            workflow.set_entry_point("financial_planner")
 
-        # Define Execution Order
-        workflow.set_entry_point("financial_planner")
+        workflow.add_conditional_edges("financial_planner", tools_condition)
         workflow.set_finish_point("financial_planner")
+
         graph = workflow.compile()
         print("First execution state")
         print(state)
@@ -235,7 +246,6 @@ def lambda_handler(event, context):
         ]
         print("SAVING")
         print(updated_state)
-        print(messages)
         save_state(session_id, updated_state)
         # Return state and session info
         response = {

@@ -44,7 +44,8 @@ def financial_strategy_agent(state: CreditAIState):
     
     Respond ONLY with a JSON object of the updated financial data.
 
-    For example the format should look like {'income': 5000, 'expenses': 2000, 'debts': {'Personal Loan': 2000}, 'credit_limit': 5000, 'missed_payments': 1, 'late_payments': 2}
+    For example, the format should look like:
+    {{ "income": 5000, "expenses": 2000, "debts": {{ "Personal Loan": 2000 }}, "credit_limit": 5000, "missed_payments": 1, "late_payments": 2 }}
     """
 
     response = llm.invoke([HumanMessage(content=instruction_prompt)])

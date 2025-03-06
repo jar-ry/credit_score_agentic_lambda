@@ -131,6 +131,7 @@ def lambda_handler(event, context):
         else:
             # Append current scenario to history before modifying
             state["incoming_message"] = incoming_message
+            state["past_scenarios"] = state['messages']
 
         # Define LangGraph Workflow
         workflow = StateGraph(CreditAIState)
@@ -165,6 +166,7 @@ def lambda_handler(event, context):
             print(messages)
             print(incoming_message)
             # TODO add some reasoning or strategy using strategy agent
+            print('state.get("past_scenarios")')
             print(state.get("past_scenarios"))
             if not state.get("past_scenarios"):
                 llm_input = f"""
@@ -224,12 +226,15 @@ def lambda_handler(event, context):
         workflow.add_node("financial_strategy_agent", financial_strategy.financial_strategy_agent)
         workflow.add_node("financial_planner", financial_planner)
         workflow.add_node("tools", ToolNode(tools=[credit_check_tool]))
-
+        print('state.get("past_scenarios")')
+        print(state.get("past_scenarios"))
         # Define Execution Flow
         if state.get("past_scenarios"):  # If there are past runs, process user intent first
+            print("Second run")
             workflow.add_edge("financial_strategy_agent", "financial_planner")  
             workflow.set_entry_point("financial_strategy_agent")
         else:  # First run, start directly with financial planning
+            print("First run")
             workflow.set_entry_point("financial_planner")
 
         workflow.add_conditional_edges("financial_planner", tools_condition)

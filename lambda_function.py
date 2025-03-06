@@ -165,7 +165,7 @@ def lambda_handler(event, context):
             print(messages)
             print(incoming_message)
             # TODO add some reasoning or strategy using strategy agent
-
+            print(state.get("past_scenarios"))
             if not state.get("past_scenarios"):
                 llm_input = f"""
                 Given the following financial and personal data:
@@ -181,9 +181,9 @@ def lambda_handler(event, context):
                 llm_input = f"""
                 User has made a request: "{incoming_message}".
                 
-                Modify the financial data accordingly and provide an updated response.
+                Modify the financial data accordingly using financual strategy agent and provide an updated response.
                 """
-
+            print(llm_input)
             messages.append(HumanMessage(content=llm_input))
             
             # Prepare the output

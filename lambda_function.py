@@ -49,6 +49,7 @@ def load_state(session_id):
 
 def serialize_state(state):
     """ Convert LangGraph state to a JSON-serializable format """
+    print(state)
     if isinstance(state, list):  
         return [serialize_state(item) for item in state]  # Recursively handle lists
     elif isinstance(state, dict):  
@@ -61,6 +62,8 @@ def serialize_state(state):
 def save_state(session_id, state):
     """ Store LangGraph session state in DynamoDB """
     serialized_state = serialize_state(state)  # Convert before saving
+    print("serialized_state")
+    print(serialized_state)
     table.put_item(
         Item={
             "session_id": session_id,

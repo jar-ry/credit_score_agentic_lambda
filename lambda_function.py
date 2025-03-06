@@ -54,7 +54,7 @@ def serialize_state(state):
     elif isinstance(state, dict):  
         return {k: serialize_state(v) for k, v in state.items()}  # Recursively handle dicts
     elif isinstance(state, (HumanMessage, AIMessage, ToolMessage)):  
-        return state.model_dump()  # Convert message objects to dictionary
+        return state.dict()  # Convert message objects to dictionary
     return state  # Return unchanged for JSON-safe types
 
 # Helper function to save state to DynamoDB

@@ -4,6 +4,7 @@ import os
 from typing import TypedDict, Annotated, Dict, List
 from langgraph.graph.message import add_messages
 import json
+import re
 
 # Credit AI State Schema
 class CreditAIState(TypedDict):
@@ -50,12 +51,15 @@ def financial_strategy_agent(state: CreditAIState):
 
     response = llm.invoke([HumanMessage(content=instruction_prompt)])
     print("financial_strategy_agent response")
-    print(response)
     print(response.content)
+    response_content = response.content.strip()
+    response_content = re.sub(r"^```json\n?|```$", "", response_content).strip()
+    print(response_content)
     try:
-        updated_financial_data = json.loads(response.content)
+        updated_financial_data = json.loads(response_content)
         state["financial_data"] = updated_financial_data
-    except json.JSONDecodeError:
-        print("Error parsing financial data update")
+    except json.JSONDecodeError as e:
+        print("Error parsing financial data update:", e)
+        print("Raw response:", response_content)
     
     return state

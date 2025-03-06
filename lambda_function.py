@@ -54,8 +54,25 @@ def serialize_state(state):
         return [serialize_state(item) for item in state]  # Recursively handle lists
     elif isinstance(state, dict):  
         return {k: serialize_state(v) for k, v in state.items()}  # Recursively handle dicts
-    elif isinstance(state, (HumanMessage, AIMessage, ToolMessage)):  
-        return state.dict()  # Convert message objects to dictionary
+    elif isinstance(state, HumanMessage):
+        return {
+            "type": "human",
+            "content": state.content,
+            "additional_kwargs": state.additional_kwargs
+        }
+    elif isinstance(state, AIMessage):
+        return {
+            "type": "ai",
+            "content": state.content,
+            "additional_kwargs": state.additional_kwargs
+        }
+    elif isinstance(state, ToolMessage):
+        return {
+            "type": "tool",
+            "name": state.name,
+            "content": state.content,
+            "tool_call_id": state.tool_call_id
+        }
     return state  # Return unchanged for JSON-safe types
 
 # Helper function to save state to DynamoDB
@@ -64,12 +81,16 @@ def save_state(session_id, state):
     serialized_state = serialize_state(state)  # Convert before saving
     print("serialized_state")
     print(serialized_state)
-    table.put_item(
-        Item={
-            "session_id": session_id,
-            "state": json.dumps(serialized_state)
-        }
-    )
+    try:
+        table.put_item(
+            Item={
+                "session_id": session_id,
+                "state": json.dumps(serialized_state)
+            }
+        )
+    except Exception as e:
+        print("ERRROR SAVING")
+        print(e)
 
 # Credit AI State Schema
 class CreditAIState(TypedDict):
